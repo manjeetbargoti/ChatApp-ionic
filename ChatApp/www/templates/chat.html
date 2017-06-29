@@ -8,7 +8,7 @@
 		<p class="title">{{status_message}}
 	</div>
 
-	<ion-content class="has-subheader has-footer" delegate-handle="mainScroll" style="margin-top: 10px !important; margin-bottom: 10px !important;">
+	<ion-content id="chat_bg" class="has-subheader has-footer" delegate-handle="mainScroll" style="margin-top: 10px !important; margin-bottom: 10px !important;">
 		<ion-list class="list">
 			<li ng-repeat="msg in messages" ng-class="{'item item-avatar-right item-text-wrap nopadding': (socketId == msg.socketId) && !msg.isLog, 'item item-avatar-left item-text-wrap nopadding': (socketId != msg.socketId) && !msg.isLog, 'item item-divider nopadding noBg': msg.isLog}">
 				<img ng-hide="msg.isLog" src="http://smartcallcentersolutions.com/images/profile_icon.png">
@@ -24,7 +24,7 @@
 	<div class="bar bar-footer item-input-inset footer-item-input-inset">
 		<label class="item-input-wrapper">
 			<i class="icon ion-android-chat placeholder-icon"></i>
-			<input type="text" placeholder="Enter your Message..." ng-model="message" ng-enter="sendMessage()">
+			<input type="text" placeholder="Enter your Message..." ng-model="message" ng-change="updateTyping()" ng-enter="sendMessage()">
 		</label>
 		<button class="button button-dark button-clear icon ion-android-send" ng-click="sendMessage()"></button>
 	</div>

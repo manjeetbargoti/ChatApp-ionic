@@ -14,7 +14,14 @@ io.on("connection", function(socket){
 		console.log(data.message);
 	
 		io.emit("Message", data)
+	});
 
+	socket.on('typing', function(data){
+		io.emit('typing', data);
+	});
+
+	socket.on('stop typing', function(data){
+		io.emit('stop typing', data);
 	});
 })
 

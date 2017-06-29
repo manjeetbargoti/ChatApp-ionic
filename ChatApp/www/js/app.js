@@ -83,8 +83,10 @@ angular.module('starter', ['ionic', 'btford.socket-io', 'ngSanitize', 'ngCordova
 
 
 // ChatController for Chat Functionality
-.controller('ChatController', function($scope, $stateParams, Socket, $ionicScrollDelegate, $sce, $cordovaMedia)
+.controller('ChatController', function($scope, $stateParams, $timeout, Socket, $ionicScrollDelegate, $sce, $cordovaMedia)
 {
+
+  $scope.status_message = "Welcome to ChatApp!";
 
   $scope.messages = [];
 
@@ -113,14 +115,50 @@ angular.module('starter', ['ionic', 'btford.socket-io', 'ngSanitize', 'ngCordova
 
     $scope.messages.push(data);
 
+    $ionicScrollDelegate.$getByHandle('mainScroll').scrollBottom(true);
+
     if($scope.socketId == data.socketId)
       playAudio("audio/outgoing.mp3");
     else
       playAudio("audio/incoming.mp3");
+  });
 
-    $ionicScrollDelegate.$getByHandle('mainScroll').scrollBottom(true);
-  })
+  // Typing message functionality
+  var typing = '';
+  var TYPING_TIMER_LENGTH = 2000;
 
+  $scope.updateTyping = function()
+  {
+    if(!typing)
+    {
+      typing = true;
+      Socket.emit('typing', {socketId: $scope.socketId, sender: $scope.nickname});
+
+      lastTypingTime = (new Date()).getTime();
+
+      $timeout(function() {
+        var timeDiff = (new Date()).getTime() - lastTypingTime;
+
+        if(timeDiff >= TYPING_TIMER_LENGTH && typing)
+        {
+          Socket.emit('stop typing', {socketId: $scope.socketId, sender: $scope.nickname});
+          typing = false;
+        }
+      }, TYPING_TIMER_LENGTH);
+    }
+
+    Socket.on('stop typing', function(data){
+      $scope.status_message = "Welcome to ChatApp!";
+    });
+
+    Socket.on('typing', function(data){
+      $scope.status_message = data.sender + " is typing...";
+    });
+
+  }
+
+
+  // Message incoming audio and outgoing audio
   var playAudio = function(src)
   {
     if(ionic.Platform.isAndroid() || ionic.Platform.isIOS())
@@ -143,6 +181,8 @@ angular.module('starter', ['ionic', 'btford.socket-io', 'ngSanitize', 'ngCordova
     }
   }
 
+
+  // Sending Chat message
   $scope.sendMessage = function(){
 
     if($scope.message.length == 0)
@@ -161,6 +201,7 @@ angular.module('starter', ['ionic', 'btford.socket-io', 'ngSanitize', 'ngCordova
   }
 
 
+  // Adding Emoticons
   var fillWithEmoticons = function(message)
   {
     message = message.replace(/\:\)/g, "<img src='img/emoticons/happy.png' width='20px' height='20px'>");
